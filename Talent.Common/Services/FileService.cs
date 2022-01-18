@@ -30,12 +30,10 @@ namespace Talent.Common.Services
             switch (type)
             {
                 case FileType.ProfilePhoto:
-                    string folderPath = Path.Combine(_environment.ContentRootPath, _tempFolder);
-                    Directory.CreateDirectory(folderPath);
-                    string filePath = Path.Combine(folderPath, id);
-                    if (File.Exists(filePath))
+                    var file = _environment.ContentRootFileProvider.GetFileInfo(Path.Combine(_tempFolder, id));
+                    if (file.Exists)
                     {
-                        return filePath;
+                        return file.PhysicalPath;
                     }
                     return null;
                 //case FileType.UserVideo:

@@ -6,12 +6,13 @@ import Cookies from 'js-cookie';
 export default class PhotoUpload extends Component {
     constructor(props) {
         super(props);
-        this.state = { selectedFile: null, imageId: this.props.imageId, preview: null }
+        this.state = { selectedFile: null, imageId: this.props.imageId, preview: null, saveBtnDisabled: false }
         this.onFileChange = this.onFileChange.bind(this)
         this.uploadPhoto = this.uploadPhoto.bind(this)
     };
 
     onFileChange(e) {
+        if (e.target.files[0] === undefined) return
         this.setState({ selectedFile: e.target.files[0] })
 
         var reader = new FileReader()
@@ -23,6 +24,7 @@ export default class PhotoUpload extends Component {
     };
 
     uploadPhoto() {
+        this.setState({ saveBtnDisabled: true })
         var formData = new FormData();
         formData.append("file", this.state.selectedFile)
         var cookies = Cookies.get('talentAuthToken');
@@ -35,12 +37,14 @@ export default class PhotoUpload extends Component {
             const res = JSON.parse(httpRequest.response)
             if (res.success) {
                 TalentUtil.notification.show("Profile updated sucessfully", "success", null, null)
-                this.setState({ selectedFile: null })
+                this.setState({ selectedFile: null, saveBtnDisabled: false })
             } else {
+                this.setState({ saveBtnDisabled: false })
                 TalentUtil.notification.show("Profile did not update successfully", "error", null, null)
             }
         }
         httpRequest.onerror = () => {
+            this.setState({ saveBtnDisabled: false })
             TalentUtil.notification.show("Profile did not update successfully", "error", null, null)
             console.log(httpRequest.response)
         }
@@ -49,7 +53,7 @@ export default class PhotoUpload extends Component {
 
 
     render() {
-        console.log(this.state)
+        // console.log(this.state)
 
         return (
             <Container className='profile-container'>
@@ -66,7 +70,7 @@ export default class PhotoUpload extends Component {
                             onClick={() => { document.getElementById("image-picker").click() }}>
                             {this.state.imageId ? null : <Icon name='camera' size='huge' circular />}
                         </Image>
-                        {this.state.selectedFile ? <Button primary
+                        {this.state.selectedFile ? <Button primary disabled={this.state.saveBtnDisabled}
                             onClick={(e) => { e.preventDefault(); this.uploadPhoto() }}>
                             Upload
                         </Button> : null}
